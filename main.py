@@ -64,13 +64,13 @@ def open_tiff_to_npy(source):
     return npys
 
 
-def get_patch(x, destination, dx, filename):
-# def get_patch(x, destination, dx=256):
+def get_patch(x, destination, dx, filename):   # def get_patch(x, destination, dx=256):
     os.makedirs(destination, exist_ok=True)
     for i in range(x.shape[0] // dx):
         for j in range(x.shape[1] // dx):
             patch = (x[i*dx:(i+1)*dx, j*dx:(j+1)*dx])
             tiff.imsave(destination + filename + '_' + str(i).zfill(3) + '_' + str(j).zfill(3) + '.tif', patch)
+
 
 def get_holes(x, threshold, distance):
     mask = (x <= threshold)
@@ -83,15 +83,16 @@ if __name__ == '__main__':
     # Parameter setting
     dx = 512
     threshold = 150
-    distance = 5
+    distance = 0
     slice_selected = [i for i in range(5)] #total : [i for i in range(200)]
 
     # read original
     source = os.environ.get('DATASET') + 'organoid_roi_3/'
     npys = open_tiff_to_npy(source)
     all_tif = sorted(os.listdir(source))
+
     # create folder
-    os.makedirs('outputs/holes/', exist_ok=True)
+    # os.makedirs('outputs/holes/', exist_ok=True)
 
     for z in slice_selected:
         filename = all_tif[z].split('.')[0] # 200.tif
@@ -99,8 +100,9 @@ if __name__ == '__main__':
         get_patch(npys[:, :, z], destination=os.environ.get('DATASET') + 'outputs/patches/', dx=dx, filename=filename)
     # get and save holes
         x = npys[:, :, z]
-        hole = get_holes(x, threshold=threshold, distance=distance)
-        tiff.imsave(os.environ.get('DATASET') + 'outputs/holes/' + filename + '.tif', hole)
+        hole = get_holes(x, threshold=threshold, distance=distance, destination=os.environ.get('DATASET'))
+        #tiff.imsave(os.environ.get('DATASET') + 'outputs/holes/' + filename + '.tif', hole)
+        tiff.imsave(destination + 'outputs/holes/' + filename + '.tif', hole)
 
     for z in slice_selected:
         filename = all_tif[z].split('.')[0]  # 200.tif
